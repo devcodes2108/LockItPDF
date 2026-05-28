@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recover Password | LockItPDF</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="index.html" aria-label="LockItPDF home">
+        <span class="brand-mark">L</span>
+        <span>LockItPDF</span>
+    </a>
+    <button class="menu-button" type="button" data-menu-toggle aria-label="Toggle navigation">&#9776;</button>
+    <nav class="nav" data-nav>
+        <a href="index.html">Home</a>
+        <a href="recovery.html" class="active">Recover</a>
+        <a href="support.html">Support</a>
+        <a href="admin.html">Admin</a>
+        <a href="logout.html">Logout</a>
+    </nav>
+</header>
+<main class="page">
+<section class="main-shell">
+    <div class="main-intro">
+        <p class="app-kicker">Local Recovery</p>
+        <h1>Recover PDF Password</h1>
+        <p>Upload a recovery-enabled PDF. LockItPDF will read the embedded recovery questions and ask for your answers.</p>
+    </div>
+
+    <div class="alert app-alert" data-recovery-error hidden></div>
+    <section class="modern-card result-card" data-recovery-result hidden></section>
+
+    <form id="recovery-form" class="modern-card modern-form" enctype="multipart/form-data">
+        <h2>Upload Recovery PDF</h2>
+        <div class="field file-field">
+            <span>Encrypted PDF</span>
+            <label class="file-button">
+                <span class="material-symbols-rounded" aria-hidden="true">folder_open</span>
+                Choose File
+                <input type="file" name="pdf" accept="application/pdf,.pdf" required data-file-input>
+            </label>
+            <ul class="file-list" data-file-list></ul>
+        </div>
+        <p class="helper-text">Regular encrypted PDFs cannot be recovered because they do not contain recovery data.</p>
+        <button class="modern-button" type="submit">
+            <span class="material-symbols-rounded" aria-hidden="true">key</span>
+            Read Questions
+        </button>
+    </form>
+</section>
+</main>
+<footer class="footer">
+    <p>LockItPDF does not store your files or passwords. Recovery option is for local/private use only.</p>
+</footer>
+<script src="assets/app.js"></script>
+<script src="assets/js/api-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('#recovery-form');
+    const errorBox = document.querySelector('[data-recovery-error]');
+    const resultBox = document.querySelector('[data-recovery-result]');
+    let uploadedPdf = null;
+    let questions = [];
+
+    function showError(message) {
+        errorBox.textContent = message || '';
+        errorBox.hidden = !message;
+    }
+
+    function showResult(html) {
+        resultBox.innerHTML = html;
+        resultBox.hidden = false;
+    }
+
+    async function readQuestions(event) {
+        event.preventDefault();
+        showError('');
+        resultBox.hidden = true;
+
+        const formData = new FormData(form);
+        uploadedPdf = formData.get('pdf');
+
+        const response = await window.LockItPDFApi.apiFetch('/api/recover', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+            showError(data.error || 'Recovery failed.');
+            return;
+        }
+
+        questions = data.questions || [];
+        if (!questions.length) {
+            showError('No recovery questions were found in this PDF.');
+            return;
+        }
+
+        form.innerHTML = `
+            <h2>Answer Questions</h2>
+            ${questions.map((question, index) => `
+                <label class="field">
+                    <span>${question}</span>
+                    <input name="answer_${index}" required autocomplete="off">
+                </label>
+            `).join('')}
+            <button class="modern-button" type="submit">
+                <span class="material-symbols-rounded" aria-hidden="true">key</span>
+                Reveal Password
+            </button>
+        `;
+        form.removeEventListener('submit', readQuestions);
+        form.addEventListener('submit', revealPassword);
+    }
+
+    async function revealPassword(event) {
+        event.preventDefault();
+        showError('');
+
+        const answers = questions.map((_, index) => form.elements[`answer_${index}`].value);
+        const formData = new FormData();
+        formData.append('pdf', uploadedPdf);
+        formData.append('answers', JSON.stringify(answers));
+
+        const response = await window.LockItPDFApi.apiFetch('/api/recover', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+            showError(data.error || 'Recovery failed.');
+            return;
+        }
+
+        showResult(`
+            <h2>Password Recovered</h2>
+            <p class="helper-text">Use this password to open the encrypted PDF.</p>
+            <p class="recovered-password">${data.password}</p>
+        `);
+    }
+
+    form.addEventListener('submit', readQuestions);
+});
+</script>
+</body>
+</html>

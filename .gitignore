@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.venv/
+runtime/
+runtime_test/
+storage/
+instance/
+*.sqlite
+*.db
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.pdf
+*.zip

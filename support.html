@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Support | LockItPDF</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="index.html" aria-label="LockItPDF home">
+        <span class="brand-mark">L</span>
+        <span>LockItPDF</span>
+    </a>
+    <button class="menu-button" type="button" data-menu-toggle aria-label="Toggle navigation">&#9776;</button>
+    <nav class="nav" data-nav>
+        <a href="index.html">Home</a>
+        <a href="recovery.html">Recover</a>
+        <a href="support.html" class="active">Support</a>
+        <a href="admin.html">Admin</a>
+        <a href="logout.html">Logout</a>
+    </nav>
+</header>
+<main class="page">
+<section class="support-modern">
+    <div class="main-intro">
+        <p class="app-kicker">Help Center</p>
+        <h1>Support</h1>
+        <p>Find answers about encryption, recovery, privacy, and account usage.</p>
+    </div>
+
+    <section class="modern-card faq-card">
+        <h2>FAQ</h2>
+        <details open><summary><span class="material-symbols-rounded">lock</span>How do I encrypt PDFs?</summary><p>Upload one or more PDF files, enter a strong password, and choose regular or recovery encryption.</p></details>
+        <details><summary><span class="material-symbols-rounded">key</span>How do I recover a forgotten PDF password?</summary><p>Use the Recover page. Upload the same recovery-enabled PDF, answer your security questions, and the password will be shown after the answers match.</p></details>
+        <details><summary><span class="material-symbols-rounded">help</span>Will the PDF itself show a Forgot Password button?</summary><p>No. PDF readers show their own password prompt before opening the file. Recovery happens through the LockItPDF Recover page.</p></details>
+        <details><summary><span class="material-symbols-rounded">database_off</span>Are files or passwords stored?</summary><p>Temporary files are used for processing. Recovery-enabled PDFs contain embedded recovery data and should be kept private.</p></details>
+    </section>
+
+    <section class="modern-card">
+        <h2>Documentation</h2>
+        <ol class="steps">
+            <li>Upload PDFs and use a strong password.</li>
+            <li>Choose regular encryption or recovery encryption.</li>
+            <li>Download the encrypted PDF or ZIP when processing completes.</li>
+            <li>Use recovery only for private files you control.</li>
+        </ol>
+        <p class="caution">LockItPDF does not keep your encryption password in a server database. Recovery-enabled PDFs contain embedded recovery data, so keep them private.</p>
+    </section>
+
+    <form class="modern-card modern-form contact-card" id="support-form">
+        <h2>Contact</h2>
+        <div class="alert" data-support-error hidden></div>
+        <div class="notice" data-support-success hidden></div>
+        <label class="field"><span>Name</span><input name="name" required></label>
+        <label class="field"><span>Email</span><input type="email" name="email" required></label>
+        <label class="field"><span>Message</span><textarea name="message" rows="5" required></textarea></label>
+        <button class="modern-button" type="submit"><span class="material-symbols-rounded" aria-hidden="true">send</span>Send</button>
+    </form>
+</section>
+</main>
+<footer class="footer">
+    <p>LockItPDF does not store your files or passwords. Recovery option is for local/private use only.</p>
+</footer>
+<script src="assets/app.js"></script>
+<script src="assets/js/api-client.js?v=20260529-cors-fetch-fix"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('#support-form');
+    const errorBox = document.querySelector('[data-support-error]');
+    const successBox = document.querySelector('[data-support-success]');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        errorBox.hidden = true;
+        successBox.hidden = true;
+
+        try {
+            const response = await window.LockItPDFApi.apiFetch('/api/support', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: form.elements.name.value,
+                    email: form.elements.email.value,
+                    message: form.elements.message.value
+                })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || 'Unable to send query.');
+            }
+            form.reset();
+            successBox.textContent = data.message || 'Your query has been sent.';
+            successBox.hidden = false;
+        } catch (error) {
+            errorBox.textContent = error.message || 'Unable to send query.';
+            errorBox.hidden = false;
+        }
+    });
+});
+</script>
+</body>
+</html>

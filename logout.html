@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logout | LockItPDF</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<main class="page">
+    <section class="auth-shell modern-auth">
+        <div class="modern-card modern-form auth-card">
+            <p class="app-kicker">Signing out</p>
+            <h1>Logging Out</h1>
+            <p class="helper-text">Clearing your LockItPDF session...</p>
+        </div>
+    </section>
+</main>
+<script src="assets/js/api-client.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await window.LockItPDFApi.apiFetch('/api/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) {
+        // Local logout still succeeds even if the API is unavailable.
+    }
+
+    window.location.href = 'login.html';
+});
+</script>
+</body>
+</html>

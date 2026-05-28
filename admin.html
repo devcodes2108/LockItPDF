@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin | LockItPDF</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="index.html" aria-label="LockItPDF home">
+        <span class="brand-mark">L</span>
+        <span>LockItPDF</span>
+    </a>
+    <button class="menu-button" type="button" data-menu-toggle aria-label="Toggle navigation">&#9776;</button>
+    <nav class="nav" data-nav>
+        <a href="index.html">Home</a>
+        <a href="recovery.html">Recover</a>
+        <a href="support.html">Support</a>
+        <a href="admin.html" class="active">Admin</a>
+        <a href="logout.html">Logout</a>
+    </nav>
+</header>
+<main class="page">
+<section class="admin-shell">
+    <div class="main-intro">
+        <p class="app-kicker">Admin</p>
+        <h1>Dashboard</h1>
+        <p>Monitor authentication, usage, users, logs, and settings from live API data.</p>
+    </div>
+
+    <div class="alert app-alert" data-admin-error hidden></div>
+
+    <nav class="admin-tabs" aria-label="Admin sections">
+        <a href="#reports"><span class="material-symbols-rounded">bar_chart</span>Reports</a>
+        <a href="#analytics"><span class="material-symbols-rounded">monitoring</span>Analytics</a>
+        <a href="#users"><span class="material-symbols-rounded">group</span>Users</a>
+        <a href="#queries"><span class="material-symbols-rounded">contact_support</span>Queries</a>
+        <a href="#logs"><span class="material-symbols-rounded">article</span>Logs</a>
+        <a href="#settings"><span class="material-symbols-rounded">settings</span>Settings</a>
+    </nav>
+
+    <section class="stats-grid" id="reports">
+        <div class="stat"><span class="material-symbols-rounded">login</span><strong data-stat="login_success">--</strong><small>Successful Logins</small></div>
+        <div class="stat"><span class="material-symbols-rounded">warning</span><strong data-stat="login_failed">--</strong><small>Failed Logins</small></div>
+        <div class="stat"><span class="material-symbols-rounded">person_add</span><strong data-stat="signups">--</strong><small>Signups</small></div>
+        <div class="stat"><span class="material-symbols-rounded">lock</span><strong data-stat="regular_encryptions">--</strong><small>Regular Encryptions</small></div>
+        <div class="stat"><span class="material-symbols-rounded">contact_support</span><strong data-stat="queries">--</strong><small>Support Queries</small></div>
+    </section>
+
+    <section class="modern-card analytics-card" id="analytics">
+        <div>
+            <h2>Usage Trends</h2>
+            <p class="helper-text">Encryption activity for the last 7 days.</p>
+        </div>
+        <div class="chart-placeholder" data-chart>
+            <span style="height: 8%"></span>
+        </div>
+    </section>
+
+    <section class="modern-card" id="users">
+        <h2>User Management</h2>
+        <div class="table-wrap modern-table-wrap">
+            <table class="modern-table">
+                <thead><tr><th>User</th><th>Email</th><th>Role</th></tr></thead>
+                <tbody data-users-table>
+                    <tr><td colspan="3">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-grid">
+        <div class="modern-card" id="queries">
+            <h2>Support Queries</h2>
+            <ul class="query-list modern-log-list" data-queries>
+                <li><span class="material-symbols-rounded">contact_support</span><div><strong>Loading queries...</strong></div></li>
+            </ul>
+        </div>
+        <div class="modern-card" id="logs">
+            <h2>System Logs</h2>
+            <ul class="log-list modern-log-list" data-logs>
+                <li><span class="material-symbols-rounded">history</span><div><strong>Loading logs...</strong></div></li>
+            </ul>
+        </div>
+        <form class="modern-card modern-form" id="settings">
+            <h2><span class="material-symbols-rounded">settings</span>Settings</h2>
+            <label class="field"><span>Brand</span><input value="LockItPDF" readonly></label>
+            <label class="field"><span>Admin Email</span><input data-admin-email value="" readonly></label>
+        </form>
+    </section>
+</section>
+</main>
+<footer class="footer">
+    <p>LockItPDF does not store your files or passwords. Recovery option is for local/private use only.</p>
+</footer>
+<script src="assets/app.js"></script>
+<script src="assets/js/api-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const errorBox = document.querySelector('[data-admin-error]');
+    const usersTable = document.querySelector('[data-users-table]');
+    const logsList = document.querySelector('[data-logs]');
+    const queriesList = document.querySelector('[data-queries]');
+    const adminEmail = document.querySelector('[data-admin-email]');
+    const chart = document.querySelector('[data-chart]');
+
+    function eventLabel(type) {
+        return String(type || 'event').replaceAll('_', ' ');
+    }
+
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
+
+    function renderSummary(data) {
+        Object.entries(data.stats || {}).forEach(([key, value]) => {
+            const target = document.querySelector(`[data-stat="${key}"]`);
+            if (target) target.textContent = value;
+        });
+
+        usersTable.innerHTML = (data.users || []).map((user) => `
+            <tr>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td>${escapeHtml(user.role || 'user')}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="3">No users found.</td></tr>';
+
+        logsList.innerHTML = (data.logs || []).map((log) => `
+            <li>
+                <span class="material-symbols-rounded">history</span>
+                <div>
+                    <strong>${escapeHtml(eventLabel(log.type))}</strong>
+                    <small>${new Date((log.created_at || 0) * 1000).toLocaleString()}</small>
+                </div>
+            </li>
+        `).join('') || '<li><span class="material-symbols-rounded">inbox</span><div><strong>No logs yet.</strong></div></li>';
+
+        queriesList.innerHTML = (data.support || []).map((query) => `
+            <li>
+                <span class="material-symbols-rounded">contact_support</span>
+                <div>
+                    <strong>${escapeHtml(query.name || 'Unknown')} &lt;${escapeHtml(query.email)}&gt;</strong>
+                    <small>${new Date((query.created_at || 0) * 1000).toLocaleString()}</small>
+                    <p>${escapeHtml(query.message)}</p>
+                </div>
+            </li>
+        `).join('') || '<li><span class="material-symbols-rounded">inbox</span><div><strong>No support queries yet.</strong></div></li>';
+
+        if (adminEmail && data.admin) {
+            adminEmail.value = data.admin.email || '';
+        }
+
+        const max = Math.max(1, ...(data.trend || []).map((item) => item.count || 0));
+        chart.innerHTML = (data.trend || []).map((item) => {
+            const height = Math.max(8, Math.round(((item.count || 0) / max) * 100));
+            return `<span title="${item.count} encryptions" style="height: ${height}%"></span>`;
+        }).join('');
+    }
+
+    try {
+        const response = await window.LockItPDFApi.apiFetch('/api/me', {
+            credentials: 'include',
+            headers: window.LockItPDFAuth?.attachAuthHeaders ? window.LockItPDFAuth.attachAuthHeaders() : {}
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+            throw new Error(data.error || 'Login required.');
+        }
+        if (data.user.role !== 'admin') {
+            errorBox.textContent = 'Admin access is restricted.';
+            errorBox.hidden = false;
+            return;
+        }
+        const summaryResponse = await window.LockItPDFApi.apiFetch('/api/admin/summary', {
+            credentials: 'include',
+            headers: window.LockItPDFAuth?.attachAuthHeaders ? window.LockItPDFAuth.attachAuthHeaders() : {}
+        });
+        const summary = await summaryResponse.json();
+        if (!summaryResponse.ok || !summary.ok) {
+            throw new Error(summary.error || 'Unable to load admin summary.');
+        }
+        renderSummary(summary);
+    } catch (error) {
+        errorBox.textContent = `Admin API is not reachable. Start Flask on http://127.0.0.1:8000 and login before using admin tools.`;
+        errorBox.hidden = false;
+    }
+});
+</script>
+</body>
+</html>

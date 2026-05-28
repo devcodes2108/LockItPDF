@@ -1,0 +1,9 @@
+Flask==3.0.3
+flask-cors==4.0.1
+Flask-Limiter==3.8.0
+gunicorn==22.0.0
+pikepdf==10.6.0
+email-validator==2.2.0
+argon2-cffi==23.1.0
+Werkzeug==3.0.3
+pytest==8.3.2

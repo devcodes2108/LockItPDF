@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Encrypt PDFs | LockItPDF</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="index.html" aria-label="LockItPDF home">
+        <span class="brand-mark">L</span>
+        <span>LockItPDF</span>
+    </a>
+    <button class="menu-button" type="button" data-menu-toggle aria-label="Toggle navigation">&#9776;</button>
+    <nav class="nav" data-nav>
+        <a href="index.html" class="active">Home</a>
+        <a href="recovery.html">Recover</a>
+        <a href="support.html">Support</a>
+        <a href="admin.html">Admin</a>
+        <a href="logout.html">Logout</a>
+    </nav>
+</header>
+<main class="page">
+<section class="main-shell">
+    <div class="main-intro">
+        <p class="app-kicker">Welcome, User</p>
+        <h1>Protect Your PDFs</h1>
+        <p>Upload your PDF, choose how you want to protect it, and download the finished file when processing is complete.</p>
+    </div>
+
+    <div class="alert app-alert" data-error-placeholder hidden></div>
+
+    <form id="upload-form" class="upload-card" method="post" action="/api/upload" enctype="multipart/form-data" data-encrypt-form>
+        <div class="form-grid">
+            <div class="field file-field">
+                <span>PDF files</span>
+                <label class="file-button">
+                    <span class="material-symbols-rounded" aria-hidden="true">folder_open</span>
+                    Choose Files
+                    <input type="file" name="pdfs[]" accept="application/pdf,.pdf" multiple required data-file-input>
+                </label>
+                <ul class="file-list" data-file-list></ul>
+            </div>
+
+            <label class="field">
+                <span>Password</span>
+                <input type="password" name="password" required minlength="8" pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&amp;*(),.?&quot;:{}|&lt;&gt;]).{8,}" title="Use at least 8 characters with uppercase, lowercase, number, and symbol." data-password autocomplete="new-password">
+            </label>
+        </div>
+
+        <meter class="strength modern-strength" min="0" max="5" low="3" high="4" optimum="5" value="0" data-strength></meter>
+        <p class="helper-text">Use at least 8 characters with uppercase, lowercase, a number, and a symbol.</p>
+
+        <input type="hidden" name="mode" value="regular" data-mode-value>
+
+        <div class="mode-select" role="group" aria-label="Choose encryption mode">
+            <button class="mode-choice is-active" type="button" data-mode-choice="regular">
+                <span class="mode-icon material-symbols-rounded" aria-hidden="true">lock</span>
+                <span>
+                    <strong>Regular Encryption</strong>
+                    <small>Protect PDFs with the password only.</small>
+                </span>
+            </button>
+
+            <button class="mode-choice" type="button" data-mode-choice="recovery">
+                <span class="mode-icon material-symbols-rounded" aria-hidden="true">key</span>
+                <span>
+                    <strong>Recovery Encryption</strong>
+                    <small>Add recovery questions for private password recovery.</small>
+                </span>
+            </button>
+        </div>
+
+        <section class="recovery-panel" data-recovery-panel hidden>
+            <div class="recovery-note">This recovery method embeds recovery data inside the PDF so the Recover page can reveal your password after correct answers. Use it only for private files you control.</div>
+            <div class="form-grid">
+                <label class="field">
+                    <span>Recovery question 1</span>
+                    <input name="question[]" placeholder="Example: First school?">
+                </label>
+                <label class="field">
+                    <span>Answer 1</span>
+                    <input name="answer[]" autocomplete="off">
+                </label>
+                <label class="field">
+                    <span>Recovery question 2</span>
+                    <input name="question[]" placeholder="Example: Favorite teacher?">
+                </label>
+                <label class="field">
+                    <span>Answer 2</span>
+                    <input name="answer[]" autocomplete="off">
+                </label>
+            </div>
+        </section>
+
+        <div class="action-row">
+            <button class="modern-button" type="submit" name="mode" value="regular" data-submit-mode="regular">
+                <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+                <span class="button-label">Encrypt PDFs Regular</span>
+                <small>Use this for normal password protection.</small>
+                <span class="button-spinner" aria-hidden="true" hidden>Processing...</span>
+            </button>
+            <button class="modern-button" type="submit" name="mode" value="recovery" data-submit-mode="recovery" disabled>
+                <span class="material-symbols-rounded" aria-hidden="true">key</span>
+                <span class="button-label">Encrypt PDFs with Recovery</span>
+                <small>Use this when you want recovery questions.</small>
+                <span class="button-spinner" aria-hidden="true" hidden>Processing...</span>
+            </button>
+        </div>
+    </form>
+</section>
+</main>
+<footer class="footer">
+    <p>LockItPDF does not store your files or passwords. Recovery option is for local/private use only.</p>
+</footer>
+<script src="assets/app.js"></script>
+<script src="assets/js/api-client.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/auth-guard.js"></script>
+<script src="assets/js/upload-client.js"></script>
+</body>
+</html>
