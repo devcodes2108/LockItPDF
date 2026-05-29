@@ -838,7 +838,7 @@ def upload():
     user, failure = require_user()
     if failure:
         return failure
-    password = request.form.get("password", "")
+    password = request.form.get("encryption_password", "") or request.form.get("password", "")
     mode = request.form.get("mode", "regular")
     if mode not in ("regular", "recovery"):
         return error("Choose a valid encryption mode.")

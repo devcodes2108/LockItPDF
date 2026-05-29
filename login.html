@@ -22,11 +22,11 @@
 </header>
 <main class="page">
     <section class="auth-shell modern-auth">
-        <form id="login-form" class="modern-card modern-form auth-card">
+        <form id="login-form" class="modern-card modern-form auth-card" method="post" action="/api/login" autocomplete="on">
             <p class="app-kicker">Welcome back</p>
             <h1>Login</h1>
             <div class="alert" data-auth-error hidden></div>
-            <label class="field"><span>Username or Email</span><input name="username" required autocomplete="username"></label>
+            <label class="field"><span>Username or Email</span><input name="username" required autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
             <label class="field"><span>Password</span><input type="password" name="password" required autocomplete="current-password"></label>
             <button class="modern-button" type="submit"><span class="material-symbols-rounded" aria-hidden="true">lock</span>Login</button>
             <p class="helper-text">New here? <a href="signup.html">Create an account</a></p>
