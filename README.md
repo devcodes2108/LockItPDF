@@ -91,13 +91,13 @@ The project contains source files, configuration files, runtime/generated files,
 
 | File | Usage |
 | --- | --- |
-| `login.html` | Login page. Uses `assets/js/auth.js` and the shared API client to call `/api/login`. |
-| `signup.html` | User registration page. Calls `/api/signup` and creates a new user account. |
+| `login.html` | (removed) Login page was removed when the site was converted to a public-access workflow. |
+| `signup.html` | (removed) Signup page was removed when the site was converted to a public-access workflow. |
 | `index.html` | Main authenticated upload page. Allows users to select PDFs, enter a password, choose encryption mode, add recovery questions, and submit uploads. |
 | `recovery.html` | Password recovery page. Uploads a recovery-enabled PDF, fetches embedded recovery questions, submits answers, and displays the recovered password when valid. |
 | `support.html` | FAQ and contact page. Sends support/contact messages to `/api/support`. The frontend now avoids the `Unexpected token '<'` JSON error by using the shared API client fallback and JSON error handling. |
 | `admin.html` | Admin dashboard page. Displays user counts, login activity, encryption counts, recovery counts, support query counts, recent logs, users, and support messages through `/api/admin/summary`. |
-| `logout.html` | Logout page. Calls `/api/logout`, clears the server session cookie, and redirects the user back to login. |
+| `logout.html` | (removed) Logout page was removed when the site was converted to a public-access workflow. |
 
 ### Frontend CSS and JavaScript
 
@@ -107,8 +107,7 @@ The project contains source files, configuration files, runtime/generated files,
 | `assets/css/style.css` | Additional modern UI styling for the current frontend pages, including auth screens, support page, admin dashboard, and responsive adjustments. |
 | `assets/app.js` | Shared UI behavior: mobile navigation toggle, password strength display, selected filename list, and recovery field visibility. |
 | `assets/js/api-client.js` | Shared API fetch wrapper. Handles same-origin API calls, local Flask fallback at `http://127.0.0.1:8000`, explicit API base override through `LOCKITPDF_API_BASE`, JSON content-type checking, and clean errors when an HTML page is returned instead of JSON. |
-| `assets/js/auth.js` | Authentication helper. Handles login, signup, and authenticated `/api/me` requests using `credentials: 'include'`. |
-| `assets/js/auth-guard.js` | Page guard. Checks whether the current user is authenticated and redirects unauthenticated users away from protected pages. |
+| `assets/js/auth-guard.js` | Page guard (now no-op). Previously redirected unauthenticated users; it's been disabled so pages are public. |
 | `assets/js/upload-client.js` | Upload form controller. Builds `FormData`, sends `/api/upload`, shows loading/errors, and redirects to the generated download URL. |
 
 ### Python Backend Package
