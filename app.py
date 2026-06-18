@@ -400,10 +400,13 @@ def current_user():
 
 
 def require_user():
+    # Prefer the authenticated user when present; otherwise fall back to a
+    # non-privileged public user so site features remain accessible.
     user = current_user()
-    if not user:
-        return None, error("Not authenticated.", 401)
-    return user, None
+    if user:
+        return user, None
+    public = {"id": "public", "username": "public", "email": "", "role": "user", "email_verified": True}
+    return public, None
 
 
 def require_admin_user():
@@ -651,8 +654,7 @@ def enforce_https():
 
 @app.get("/")
 def index():
-    if not current_user():
-        return redirect("/login.html")
+    # Serve the homepage to all visitors without redirecting to a login page.
     return app.send_static_file("index.html")
 
 
