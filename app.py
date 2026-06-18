@@ -666,26 +666,8 @@ def health():
 @app.post("/api/signup")
 @limiter.limit("5 per hour")
 def signup():
-    cleanup_old_jobs()
-    data, failure = parse_payload(SignupSchema)
-    if failure:
-        return failure
-    if os.environ.get("LOCKITPDF_CAPTCHA_ON_SIGNUP", "false").lower() == "true" and not verify_captcha(request.form.get("captcha_token") or (request.get_json(silent=True) or {}).get("captcha_token")):
-        log_event("suspicious_activity", reason="captcha_required", path="/api/signup")
-        return error("Complete CAPTCHA to continue.", 403)
-    email = data.email.lower()
-    users = read_users()
-    if any(u["username"].lower() == data.username.lower() or u["email"].lower() == email for u in users):
-        return error("That username or email is already registered.", 409)
-    user = {"id": uuid.uuid4().hex, "username": data.username, "email": email, "password_hash": hash_password(data.password), "role": role_for_email(email), "email_verified": False, "created_at": int(time.time())}
-    users.append(user)
-    write_users(users)
-    send_verification(user)
-    log_event("signup", user_id=user["id"], role=user["role"])
-    token = create_session(user["id"])
-    response = jsonify({"ok": True, "user": public_user(user), "verification_required": REQUIRE_EMAIL_VERIFICATION})
-    set_session_cookie(response, token)
-    return response, 201
+    # Signup endpoint disabled for public-only deployment.
+    return error("Signup is disabled on this deployment.", 410)
 
 
 @app.get("/api/verify-email")
@@ -706,47 +688,8 @@ def verify_email():
 @app.post("/api/login")
 @limiter.limit("10 per minute")
 def login():
-    cleanup_old_jobs()
-    data, failure = parse_payload(LoginSchema)
-    if failure:
-        return failure
-    identifier = data.username.strip().lower()
-    user = failed_login_state(identifier)
-    if user and int(user.get("locked_until", 0)) > time.time():
-        log_event("login_blocked", user_id=user["id"])
-        response, status = error("Account temporarily locked. Try again later.", 423)
-        response.headers["Retry-After"] = str(max(1, int(user.get("locked_until", 0) - time.time())))
-        return response, status
-    for account in read_users():
-        if identifier in (account["username"].lower(), account["email"].lower()):
-            ok, needs_rehash = verify_password(account, data.password)
-            if not ok:
-                register_failed_login(account)
-                delay = retry_after_seconds(account)
-                log_event("login_failed", user_id=account["id"], backoff_seconds=delay)
-                response, status = error("Invalid username/email or password.", 401)
-                response.headers["Retry-After"] = str(delay)
-                if suspicious_activity(account):
-                    log_event("suspicious_activity", user_id=account["id"], reason="failed_login_threshold")
-                return response, status
-            account = sync_admin_role(account)
-            if REQUIRE_EMAIL_VERIFICATION and not account_email_verified(account):
-                return error("Verify your email before logging in.", 403)
-            if needs_rehash:
-                users = read_users()
-                for stored in users:
-                    if stored["id"] == account["id"]:
-                        stored["password_hash"] = hash_password(data.password)
-                        break
-                write_users(users)
-            reset_failed_logins(account)
-            token = create_session(account["id"])
-            log_event("login_success", user_id=account["id"], role=account.get("role", "user"))
-            response = jsonify({"ok": True, "user": public_user(account)})
-            set_session_cookie(response, token)
-            return response
-    log_event("login_failed")
-    return error("Invalid username/email or password.", 401)
+    # Login endpoint disabled for public-only deployment.
+    return error("Login is disabled on this deployment.", 410)
 
 
 @app.get("/api/me")
@@ -759,12 +702,8 @@ def me():
 
 @app.post("/api/logout")
 def logout():
-    user = current_user()
-    invalidate_session(auth_token())
-    log_event("logout", user_id=user["id"] if user else None)
-    response = jsonify({"ok": True})
-    response.delete_cookie("lockitpdf_session", path="/")
-    return response
+    # Logout endpoint disabled — sessions are not required in public mode.
+    return error("Logout is disabled on this deployment.", 410)
 
 
 @app.post("/api/password-reset/request")
