@@ -191,6 +191,20 @@ def test_admin_endpoint_rejects_non_admin_and_allows_admin(monkeypatch, tmp_path
     assert allowed.get_json()["admin"]["role"] == "admin"
 
 
+def test_admin_page_requires_admin_secret(monkeypatch, tmp_path):
+    app_module = load_app(monkeypatch, tmp_path, ADMIN_SECRET="supersecret")
+    client = app_module.app.test_client()
+
+    missing = client.get("/admin.html")
+    invalid = client.get("/admin.html", headers={"X-Admin-Secret": "wrong"})
+    valid = client.get("/admin.html", headers={"X-Admin-Secret": "supersecret"})
+
+    assert missing.status_code == 403
+    assert invalid.status_code == 403
+    assert valid.status_code == 200
+    assert b"Admin | LockItPDF" in valid.data
+
+
 def test_support_query_is_saved_and_visible_to_admin(monkeypatch, tmp_path):
     app_module = load_app(monkeypatch, tmp_path)
     sent = []

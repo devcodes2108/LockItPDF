@@ -48,6 +48,7 @@ JOBS_FILE = DATA_DIR / "jobs.json"
 SUPPORT_FILE = DATA_DIR / "support.json"
 
 ADMIN_EMAIL = os.environ.get("LOCKITPDF_ADMIN_EMAIL", "").strip().lower()
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "").strip()
 DEFAULT_DEV_ORIGINS = "http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1,http://localhost"
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://127.0.0.1:8000")
 FRONTEND_ORIGINS = [
@@ -74,6 +75,8 @@ if ENV == "production" and not os.environ.get("LOCKITPDF_DATA_DIR"):
     raise RuntimeError("LOCKITPDF_DATA_DIR must point to private runtime storage in production.")
 if ENV == "production" and not ADMIN_EMAIL:
     raise RuntimeError("LOCKITPDF_ADMIN_EMAIL must be set in production.")
+if ENV == "production" and not ADMIN_SECRET:
+    raise RuntimeError("ADMIN_SECRET must be set in production.")
 
 ph = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=2)
 
@@ -227,6 +230,18 @@ def send_alert(event_type, **details):
 
 def error(message, status=400):
     return jsonify({"ok": False, "error": message}), status
+
+
+def admin_secret_from_request():
+    return (request.headers.get("X-Admin-Secret", "") or request.args.get("admin_secret", "")).strip()
+
+
+def require_admin_secret():
+    if not ADMIN_SECRET:
+        return error("Admin access required.", 403)
+    if not secrets.compare_digest(admin_secret_from_request(), ADMIN_SECRET):
+        return error("Admin access required.", 403)
+    return None
 
 
 @app.errorhandler(429)
@@ -650,6 +665,14 @@ def enforce_https():
         # Redirecting cleartext requests protects cookies that require Secure transport.
         return redirect(request.url.replace("http://", "https://", 1), code=308)
     return None
+
+
+@app.get("/admin.html")
+def admin_page():
+    failure = require_admin_secret()
+    if failure:
+        return failure
+    return app.send_static_file("admin.html")
 
 
 @app.get("/")

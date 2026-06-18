@@ -453,6 +453,7 @@ Important variables include:
 | --- | --- |
 | `ENV` | `development` or `production`. |
 | `SESSION_SECRET` | Secret used for session token signing. Required in production. |
+| `ADMIN_SECRET` | Secret key required to access the admin dashboard page. |
 | `COOKIE_SECURE` | Enables secure cookies in production. |
 | `FRONTEND_ORIGIN` | Main frontend origin used for CORS and links. |
 | `FRONTEND_ORIGINS` | Comma-separated allowed frontend origins. |

@@ -21,6 +21,7 @@ Use a cloud secrets manager or platform-managed environment variables in product
 DATABASE_URL
 SESSION_SECRET
 JWT_SECRET
+ADMIN_SECRET
 FRONTEND_ORIGIN
 APP_BASE_URL
 LOCKITPDF_ADMIN_EMAIL
